@@ -412,7 +412,7 @@ function displayRecentActivity(recentActivity, discordActivityElement, customTim
     activityIcon.style.borderRadius = '8px';
     activityIcon.style.objectFit = 'cover';
     
-    activityName.textContent = `Dernière activité: ${recentActivity.name}`;
+    activityName.textContent = `Last activity: ${recentActivity.name}`;
     activityState.textContent = `${recentActivity.state || 'Playing'} • ${timeString}`;
 }
 
@@ -546,7 +546,7 @@ function showLastActivity() {
         const timeString = formatLastActivityTime(timeElapsed);
         
         activityIcon.src = lastActivity.icon || 'https://via.placeholder.com/40';
-        activityName.textContent = `Dernière activité: ${lastActivity.name}`;
+        activityName.textContent = `Last activity: ${lastActivity.name}`;
         activityState.textContent = `${lastActivity.state} • ${timeString}`;
         
         discordActivityElement.classList.add('last-activity');
@@ -568,7 +568,7 @@ function formatLastActivityTime(milliseconds) {
     } else if (minutes > 0) {
         return `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
     } else {
-        return 'il y a quelques secondes';
+        return 'a few seconds ago';
     }
 }
 
