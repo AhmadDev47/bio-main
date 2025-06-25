@@ -322,7 +322,7 @@ function showRecentActivity(data, discordActivityElement) {
             displayRecentActivity(recentActivity, discordActivityElement);
             return;
         } catch (e) {
-            console.log('Erreur parsing recent activity:', e);
+            console.log('Error parsing recent activity:', e);
         }
     }
     
@@ -358,12 +358,12 @@ function searchGoogleImage(gameName, callback) {
         img.crossOrigin = 'anonymous';
         
         img.onload = function() {
-            console.log(`Image trouvée pour ${gameName}: ${imageSources[currentIndex]}`);
+            console.log(`Image found for ${gameName}: ${imageSources[currentIndex]}`);
             callback(imageSources[currentIndex]);
         };
         
         img.onerror = function() {
-            console.log(`Échec de chargement: ${imageSources[currentIndex]}`);
+            console.log(`Loading failure: ${imageSources[currentIndex]}`);
             currentIndex++;
             tryNextSource();
         };
@@ -500,8 +500,8 @@ function copyToClipboard(text, type) {
     navigator.clipboard.writeText(text).then(function() {
         showCopyNotification(`${type} copié !`, true);
     }).catch(function(err) {
-        console.error('Erreur lors de la copie:', err);
-        showCopyNotification(`Erreur lors de la copie`, false);
+        console.error('Error while copying:', err);
+        showCopyNotification(`Error while copying`, false);
     });
 }
 
@@ -573,7 +573,7 @@ function formatLastActivityTime(milliseconds) {
 }
 
 function searchGameLogo(gameName, callback) {
-    console.log(`Recherche de logo pour le jeu: "${gameName}"`);
+    console.log(`Logo search for the game: "${gameName}"`);
     
     const normalizedName = gameName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
     const encodedName = encodeURIComponent(gameName);
@@ -620,7 +620,7 @@ function searchGameLogo(gameName, callback) {
     
     for (const variant of gameVariants) {
         if (gameLogoMap[variant]) {
-            console.log(`Logo trouvé pour: ${gameName} (variante: ${variant})`);
+            console.log(`Logo found for: ${gameName} (variante: ${variant})`);
             callback(gameLogoMap[variant]);
             return;
         }
