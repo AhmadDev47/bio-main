@@ -543,7 +543,7 @@ body::before {
 }
 
 .discord-activity.last-activity::before {
-    content: "Dernière activité";
+    content: "Last activity";
     position: absolute;
     top: -8px;
     left: 12px;
