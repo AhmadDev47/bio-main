@@ -545,7 +545,7 @@ function showLastActivity() {
         const timeElapsed = Date.now() - lastActivityTime;
         const timeString = formatLastActivityTime(timeElapsed);
         
-        activityIcon.src = lastActivity.icon || 'https://via.placeholder.com/40';
+        activityIcon.src = lastActivity.icon || 'https://media.discordapp.net/attachments/1370086271879352442/1373279376375943178/Logo2.gif?ex=685d4015&is=685bee95&hm=046038422c87e8746cec1e9ff8014573a9fbd6bb22b0c2ec9bdc5c3533248d9b&=';
         activityName.textContent = `Last activity: ${lastActivity.name}`;
         activityState.textContent = `${lastActivity.state} • ${timeString}`;
         
@@ -562,9 +562,9 @@ function formatLastActivityTime(milliseconds) {
     const days = Math.floor(hours / 24);
     
     if (days > 0) {
-        return `il y a ${days} jour${days > 1 ? 's' : ''}`;
+        return `il y a ${days} day${days > 1 ? 's' : ''}`;
     } else if (hours > 0) {
-        return `il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+        return `il y a ${hours} hour${hours > 1 ? 's' : ''}`;
     } else if (minutes > 0) {
         return `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
     } else {
