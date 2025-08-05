@@ -341,7 +341,7 @@ function searchGoogleImage(gameName, callback) {
         `https://images.igdb.com/igdb/image/upload/t_cover_small/${gameName.toLowerCase().replace(/\s+/g, '-')}.jpg`,
         `https://steamcdn-a.akamaihd.net/steam/apps/search/${gameName.toLowerCase().replace(/\s+/g, '%20')}/header.jpg`,
         `https://api.iconify.design/game-icons:${gameName.toLowerCase().replace(/\s+/g, '-')}.svg`,
-        `https://logo.clearbit.com/${gameName.toLowerCase().replace(/\s+/g, '')}.com`
+         `https://cdn.discordapp.com/attachments/1388667403097084017/1399933092579381368/Cybersecurity_Logo_Berlin_Anti_Cheat_-_Berlin_Bear_Focus.png?ex=6892b5ca&is=6891644a&hm=c2e0e8f17015b1f99fa534beafa08ba43feed12560b8794b83db5ce2324ba320&`
     ];
     
     let currentIndex = 0;
@@ -562,11 +562,11 @@ function formatLastActivityTime(milliseconds) {
     const days = Math.floor(hours / 24);
     
     if (days > 0) {
-        return `il y a ${days} day${days > 1 ? 's' : ''}`;
+        return `There is ${days} day${days > 1 ? 's' : ''}`;
     } else if (hours > 0) {
-        return `il y a ${hours} hour${hours > 1 ? 's' : ''}`;
+        return `There is ${hours} hour${hours > 1 ? 's' : ''}`;
     } else if (minutes > 0) {
-        return `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        return `There is ${minutes} minute${minutes > 1 ? 's' : ''}`;
     } else {
         return 'a few seconds ago';
     }
@@ -585,7 +585,7 @@ function searchGameLogo(gameName, callback) {
         `https://steamcdn-a.akamaihd.net/steam/apps/${getGameSteamId(gameName)}/header.jpg`,
         `https://www.mobygames.com/images/covers/l/${getGameMobyId(gameName)}-front.jpg`,
         `https://customsearch.googleapis.com/customsearch/v1?q=${encodedName}+game+logo&searchType=image&key=YOUR_API_KEY`,
-        `https://logo.clearbit.com/${normalizedName}.com`,
+        `https://cdn.discordapp.com/attachments/1388667403097084017/1399933092579381368/Cybersecurity_Logo_Berlin_Anti_Cheat_-_Berlin_Bear_Focus.png?ex=6892b5ca&is=6891644a&hm=c2e0e8f17015b1f99fa534beafa08ba43feed12560b8794b83db5ce2324ba320&`,
         `https://api.iconify.design/game-icons:${normalizedName}.svg`
     ];
     
