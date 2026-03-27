@@ -1,4 +1,4 @@
-const DISCORD_USER_ID = '1146773764705636362'; 
+const DISCORD_USER_ID = '1146773764705636362';
 const LANYARD_WS_URL = 'wss://api.lanyard.rest/socket';
 
 let socket = null;
@@ -9,7 +9,7 @@ let mouseY = 0;
 let cursorX = 0;
 let cursorY = 0;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initCustomCursor();
     createFloatingElements();
     connectToLanyard();
@@ -19,39 +19,39 @@ document.addEventListener('DOMContentLoaded', function() {
 function initCustomCursor() {
     const cursor = document.getElementById('cursor');
     const interactiveElements = document.querySelectorAll('a, button, .link-item, .avatar, .spotify-card, .discord-status, .activity-card');
-    
+
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
     });
-    
+
     function animateCursor() {
         const dx = mouseX - cursorX;
         const dy = mouseY - cursorY;
-        
+
         cursorX += dx * 0.85;
         cursorY += dy * 0.85;
-        
+
         cursor.style.left = cursorX + 'px';
         cursor.style.top = cursorY + 'px';
-        
+
         requestAnimationFrame(animateCursor);
     }
     animateCursor();
-    
+
     document.addEventListener('mousedown', () => {
         cursor.classList.add('click');
     });
-    
+
     document.addEventListener('mouseup', () => {
         cursor.classList.remove('click');
     });
-    
+
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => {
             cursor.classList.add('hover');
         });
-        
+
         el.addEventListener('mouseleave', () => {
             cursor.classList.remove('hover');
         });
@@ -60,7 +60,7 @@ function initCustomCursor() {
 
 function createFloatingElements() {
     const container = document.querySelector('.container');
-    
+
     for (let i = 0; i < 3; i++) {
         const element = document.createElement('div');
         element.style.cssText = `
@@ -76,7 +76,7 @@ function createFloatingElements() {
         `;
         container.appendChild(element);
     }
-    
+
     const style = document.createElement('style');
     style.textContent = `
         @keyframes float {
@@ -91,13 +91,13 @@ function createFloatingElements() {
 
 function initLinkCopyFeature() {
     const copyLinks = document.querySelectorAll('[data-copy]');
-    
+
     copyLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const textToCopy = link.getAttribute('data-copy');
             const type = link.getAttribute('data-type');
-            
+
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showCopyNotification(`${type} copied to clipboard`);
             }).catch(() => {
@@ -113,17 +113,17 @@ function showCopyNotification(message) {
         notif.classList.add('hide');
         setTimeout(() => notif.remove(), 400);
     });
-    
+
     const notification = document.createElement('div');
     notification.className = 'copy-notification';
     notification.innerHTML = `<span class="notification-text">${message}</span>`;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 10);
-    
+
     setTimeout(() => {
         notification.classList.add('hide');
         setTimeout(() => {
@@ -139,20 +139,20 @@ function connectToLanyard() {
 
     socket = new WebSocket(LANYARD_WS_URL);
 
-    socket.onopen = function() {
+    socket.onopen = function () {
         console.log('Connected to Lanyard');
     };
 
-    socket.onmessage = function(event) {
+    socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
-        
+
         if (data.op === 1) {
             heartbeatInterval = setInterval(() => {
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify({ op: 3 }));
                 }
             }, data.d.heartbeat_interval);
-            
+
             socket.send(JSON.stringify({
                 op: 2,
                 d: {
@@ -164,7 +164,7 @@ function connectToLanyard() {
         }
     };
 
-    socket.onclose = function() {
+    socket.onclose = function () {
         console.log('Disconnected from Lanyard');
         if (heartbeatInterval) {
             clearInterval(heartbeatInterval);
@@ -172,11 +172,11 @@ function connectToLanyard() {
         if (spotifyUpdateInterval) {
             clearInterval(spotifyUpdateInterval);
         }
-        
+
         setTimeout(connectToLanyard, 5000);
     };
 
-    socket.onerror = function(error) {
+    socket.onerror = function (error) {
         console.error('Lanyard WebSocket error:', error);
     };
 }
@@ -195,34 +195,36 @@ function updateDiscordStatus(data) {
     if (data.discord_user) {
         const displayName = data.discord_user.display_name || data.discord_user.username;
         usernameElement.textContent = displayName;
-        
+
         const avatarElement = document.getElementById('avatar');
         if (data.discord_user.avatar) {
-            const avatarUrl = `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.png?size=256`;
+            const isGif = data.discord_user.avatar.startsWith('a_');
+            const extension = isGif ? 'gif' : 'png';
+            const avatarUrl = `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.${extension}?size=256`;
             avatarElement.src = avatarUrl;
         }
     }
 
     statusElement.className = 'status-indicator';
     discordStatusElement.className = 'activity-card discord-status';
-    
+
     if (data.discord_status) {
         statusElement.classList.add(data.discord_status);
         discordStatusElement.classList.add(data.discord_status);
-        
+
         const statusText = {
             'online': 'Online',
             'idle': 'Away',
             'dnd': 'Do Not Disturb',
             'offline': 'Offline'
         };
-        
+
         statusTextElement.textContent = statusText[data.discord_status] || 'Unknown';
     }
 
     if (data.activities && data.activities.length > 0) {
         const activity = data.activities.find(a => a.type !== 4 && a.name !== 'Spotify');
-        
+
         if (activity) {
             displayCurrentActivity(activity, discordActivityElement);
         } else {
@@ -235,11 +237,11 @@ function updateDiscordStatus(data) {
     if (data.spotify) {
         spotifySection.style.display = 'block';
         updateSpotifyInfo(data.spotify);
-        
+
         if (spotifyUpdateInterval) {
             clearInterval(spotifyUpdateInterval);
         }
-        
+
         spotifyUpdateInterval = setInterval(() => {
             updateSpotifyProgress(data.spotify);
         }, 1000);
@@ -261,20 +263,20 @@ function displayCurrentActivity(activity, discordActivityElement) {
         assets: activity.assets
     };
     lastActivityTime = Date.now();
-    
+
     discordActivityElement.style.display = 'flex';
     discordActivityElement.classList.remove('last-activity');
-    
+
     const activityIcon = document.getElementById('activity-icon');
     const activityName = document.getElementById('activity-name');
     const activityState = document.getElementById('activity-state');
-    
+
     function saveIconAndUpdate(iconUrl) {
         lastActivity.icon = iconUrl;
         localStorage.setItem('lastActivity', JSON.stringify(lastActivity));
         localStorage.setItem('lastActivityTime', lastActivityTime.toString());
     }
-    
+
     if (activity.assets && activity.assets.large_image && activity.application_id) {
         let iconUrl;
         if (activity.assets.large_image.startsWith('mp:')) {
@@ -282,20 +284,20 @@ function displayCurrentActivity(activity, discordActivityElement) {
         } else {
             iconUrl = `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
         }
-        
+
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             activityIcon.src = iconUrl;
             saveIconAndUpdate(iconUrl);
         };
-        img.onerror = function() {
+        img.onerror = function () {
             const appIconUrl = `https://cdn.discordapp.com/app-icons/${activity.application_id}/icon.png`;
             const appImg = new Image();
-            appImg.onload = function() {
+            appImg.onload = function () {
                 activityIcon.src = appIconUrl;
                 saveIconAndUpdate(appIconUrl);
             };
-            appImg.onerror = function() {
+            appImg.onerror = function () {
                 const initials = activity.name.length >= 3 ? activity.name.substring(0, 3).toUpperCase() : activity.name.toUpperCase();
                 const svgIcon = `data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='8' fill='%237289da'/><text x='24' y='30' font-family='Arial,sans-serif' font-size='14' font-weight='bold' text-anchor='middle' fill='white'>${initials}</text></svg>`;
                 activityIcon.src = svgIcon;
@@ -310,7 +312,7 @@ function displayCurrentActivity(activity, discordActivityElement) {
         activityIcon.src = svgIcon;
         saveIconAndUpdate(svgIcon);
     }
-    
+
     activityName.textContent = activity.name;
     activityState.textContent = activity.state || activity.details || 'Playing';
 }
@@ -325,7 +327,7 @@ function showRecentActivity(data, discordActivityElement) {
             console.log('Error parsing recent activity:', e);
         }
     }
-    
+
     if (lastActivity && lastActivityTime) {
         displayRecentActivity(lastActivity, discordActivityElement, lastActivityTime);
     } else {
@@ -335,17 +337,17 @@ function showRecentActivity(data, discordActivityElement) {
 
 function searchGoogleImage(gameName, callback) {
     const query = encodeURIComponent(`${gameName} game logo icon`);
-    
+
     const imageSources = [
         `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.google.com/search?tbm=isch&q=${query}`)}&format=json`,
         `https://images.igdb.com/igdb/image/upload/t_cover_small/${gameName.toLowerCase().replace(/\s+/g, '-')}.jpg`,
         `https://steamcdn-a.akamaihd.net/steam/apps/search/${gameName.toLowerCase().replace(/\s+/g, '%20')}/header.jpg`,
         `https://api.iconify.design/game-icons:${gameName.toLowerCase().replace(/\s+/g, '-')}.svg`,
-         `https://cdn.discordapp.com/attachments/1388667403097084017/1399933092579381368/Cybersecurity_Logo_Berlin_Anti_Cheat_-_Berlin_Bear_Focus.png?ex=6892b5ca&is=6891644a&hm=c2e0e8f17015b1f99fa534beafa08ba43feed12560b8794b83db5ce2324ba320&`
+        `https://cdn.discordapp.com/attachments/1388667403097084017/1399933092579381368/Cybersecurity_Logo_Berlin_Anti_Cheat_-_Berlin_Bear_Focus.png?ex=6892b5ca&is=6891644a&hm=c2e0e8f17015b1f99fa534beafa08ba43feed12560b8794b83db5ce2324ba320&`
     ];
-    
+
     let currentIndex = 0;
-    
+
     function tryNextSource() {
         if (currentIndex >= imageSources.length) {
             const initials = gameName.length >= 3 ? gameName.substring(0, 3).toUpperCase() : gameName.toUpperCase();
@@ -353,35 +355,35 @@ function searchGoogleImage(gameName, callback) {
             callback(svgIcon);
             return;
         }
-        
+
         const img = new Image();
         img.crossOrigin = 'anonymous';
-        
-        img.onload = function() {
+
+        img.onload = function () {
             console.log(`Image found for ${gameName}: ${imageSources[currentIndex]}`);
             callback(imageSources[currentIndex]);
         };
-        
-        img.onerror = function() {
+
+        img.onerror = function () {
             console.log(`Loading failure: ${imageSources[currentIndex]}`);
             currentIndex++;
             tryNextSource();
         };
-        
+
         img.src = imageSources[currentIndex];
     }
-    
+
     tryNextSource();
 }
 
 function displayRecentActivity(recentActivity, discordActivityElement, customTime = null) {
     discordActivityElement.style.display = 'flex';
     discordActivityElement.classList.add('last-activity');
-    
+
     const activityIcon = document.getElementById('activity-icon');
     const activityName = document.getElementById('activity-name');
     const activityState = document.getElementById('activity-state');
-    
+
     let timeElapsed;
     if (customTime) {
         timeElapsed = Date.now() - customTime;
@@ -390,40 +392,40 @@ function displayRecentActivity(recentActivity, discordActivityElement, customTim
     } else {
         timeElapsed = 0;
     }
-    
+
     const timeString = formatLastActivityTime(timeElapsed);
-    
+
     console.log(`Recherche d'icône pour: ${recentActivity.name}`);
-    
+
     const loadingIcon = `data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='8' fill='%23f0f0f0'/><text x='24' y='30' font-family='Arial,sans-serif' font-size='12' font-weight='bold' text-anchor='middle' fill='%23666'>...</text></svg>`;
     activityIcon.src = loadingIcon;
-    
-    searchGoogleImage(recentActivity.name, function(iconUrl) {
+
+    searchGoogleImage(recentActivity.name, function (iconUrl) {
         activityIcon.src = iconUrl;
-        
+
         if (recentActivity && iconUrl) {
             recentActivity.icon = iconUrl;
             localStorage.setItem('lastActivity', JSON.stringify(recentActivity));
         }
     });
-    
+
     activityIcon.style.width = '48px';
     activityIcon.style.height = '48px';
     activityIcon.style.borderRadius = '8px';
     activityIcon.style.objectFit = 'cover';
-    
+
     activityName.textContent = `Last activity: ${recentActivity.name}`;
     activityState.textContent = `${recentActivity.state || 'Playing'} • ${timeString}`;
 }
 
 function showLastActivity() {
     const discordActivityElement = document.getElementById('discord-activity');
-    
+
     if (!lastActivity && localStorage.getItem('lastActivity')) {
         lastActivity = JSON.parse(localStorage.getItem('lastActivity'));
         lastActivityTime = parseInt(localStorage.getItem('lastActivityTime'));
     }
-    
+
     if (lastActivity && lastActivityTime) {
         displayRecentActivity(lastActivity, discordActivityElement, lastActivityTime);
     } else {
@@ -435,11 +437,11 @@ function updateSpotifyInfo(spotify) {
     const albumCover = document.getElementById('album-cover');
     const spotifyTitle = document.getElementById('spotify-title');
     const spotifyArtist = document.getElementById('spotify-artist');
-    
+
     if (spotify.album_art_url) {
         albumCover.src = spotify.album_art_url;
     }
-    
+
     spotifyTitle.textContent = spotify.song || 'Unknown Track';
     spotifyArtist.textContent = spotify.artist || 'Unknown Artist';
 }
@@ -448,18 +450,18 @@ function updateSpotifyProgress(spotify) {
     const progressFill = document.getElementById('progress-fill');
     const currentTimeElement = document.getElementById('current-time');
     const totalTimeElement = document.getElementById('total-time');
-    
+
     if (spotify.timestamps) {
         const now = Date.now();
         const start = spotify.timestamps.start;
         const end = spotify.timestamps.end;
-        
+
         const elapsed = now - start;
         const total = end - start;
         const progress = Math.min((elapsed / total) * 100, 100);
-        
+
         progressFill.style.width = progress + '%';
-        
+
         currentTimeElement.textContent = formatTime(elapsed);
         totalTimeElement.textContent = formatTime(total);
     }
@@ -472,7 +474,7 @@ function formatTime(ms) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-window.addEventListener('beforeunload', function() {
+window.addEventListener('beforeunload', function () {
     if (socket) {
         socket.close();
     }
@@ -483,23 +485,23 @@ window.addEventListener('beforeunload', function() {
 
 function initCopyFunctionality() {
     const copyElements = document.querySelectorAll('[data-copy]');
-    
+
     copyElements.forEach(element => {
-        element.addEventListener('click', function(e) {
+        element.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             const textToCopy = this.getAttribute('data-copy');
             const type = this.getAttribute('data-type');
-            
+
             copyToClipboard(textToCopy, type);
         });
     });
 }
 
 function copyToClipboard(text, type) {
-    navigator.clipboard.writeText(text).then(function() {
+    navigator.clipboard.writeText(text).then(function () {
         showCopyNotification(`${type} copié !`, true);
-    }).catch(function(err) {
+    }).catch(function (err) {
         console.error('Error while copying:', err);
         showCopyNotification(`Error while copying`, false);
     });
@@ -511,17 +513,17 @@ function showCopyNotification(message, success) {
         notif.classList.add('hide');
         setTimeout(() => notif.remove(), 400);
     });
-    
+
     const notification = document.createElement('div');
     notification.className = `copy-notification ${success ? 'success' : 'error'}`;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     setTimeout(() => {
         notification.classList.add('hide');
         setTimeout(() => {
@@ -538,17 +540,17 @@ function showLastActivity() {
     const activityIcon = document.getElementById('activity-icon');
     const activityName = document.getElementById('activity-name');
     const activityState = document.getElementById('activity-state');
-    
+
     if (lastActivity && lastActivityTime) {
         discordActivityElement.style.display = 'flex';
-        
+
         const timeElapsed = Date.now() - lastActivityTime;
         const timeString = formatLastActivityTime(timeElapsed);
-        
+
         activityIcon.src = lastActivity.icon || 'https://media.discordapp.net/attachments/1370086271879352442/1373279376375943178/Logo2.gif?ex=685d4015&is=685bee95&hm=046038422c87e8746cec1e9ff8014573a9fbd6bb22b0c2ec9bdc5c3533248d9b&=';
         activityName.textContent = `Last activity: ${lastActivity.name}`;
         activityState.textContent = `${lastActivity.state} • ${timeString}`;
-        
+
         discordActivityElement.classList.add('last-activity');
     } else {
         discordActivityElement.style.display = 'none';
@@ -560,7 +562,7 @@ function formatLastActivityTime(milliseconds) {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
+
     if (days > 0) {
         return `There is ${days} day${days > 1 ? 's' : ''}`;
     } else if (hours > 0) {
@@ -574,10 +576,10 @@ function formatLastActivityTime(milliseconds) {
 
 function searchGameLogo(gameName, callback) {
     console.log(`Logo search for the game: "${gameName}"`);
-    
+
     const normalizedName = gameName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
     const encodedName = encodeURIComponent(gameName);
-    
+
     const searchSources = [
         `https://api.rawg.io/api/games?search=${encodedName}&key=YOUR_API_KEY`,
         `https://www.steamgriddb.com/api/v2/search/autocomplete/${encodedName}`,
@@ -588,7 +590,7 @@ function searchGameLogo(gameName, callback) {
         `https://cdn.discordapp.com/attachments/1388667403097084017/1399933092579381368/Cybersecurity_Logo_Berlin_Anti_Cheat_-_Berlin_Bear_Focus.png?ex=6892b5ca&is=6891644a&hm=c2e0e8f17015b1f99fa534beafa08ba43feed12560b8794b83db5ce2324ba320&`,
         `https://api.iconify.design/game-icons:${normalizedName}.svg`
     ];
-    
+
     const gameLogoMap = {
         'grand theft auto v': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Grand_Theft_Auto_V_Logo.svg/1200px-Grand_Theft_Auto_V_Logo.svg.png',
         'gta v': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Grand_Theft_Auto_V_Logo.svg/1200px-Grand_Theft_Auto_V_Logo.svg.png',
@@ -604,10 +606,10 @@ function searchGameLogo(gameName, callback) {
         'world of warcraft': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/World_of_Warcraft_logo.svg/1200px-World_of_Warcraft_logo.svg.png',
         'counter-strike': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Counter-Strike_Global_Offensive_logo.svg/1200px-Counter-Strike_Global_Offensive_logo.svg.png'
     };
-    
+
     const gameKey = gameName.toLowerCase().trim();
     const normalizedGameKey = gameKey.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-    
+
     const gameVariants = [
         gameKey,
         normalizedGameKey,
@@ -617,7 +619,7 @@ function searchGameLogo(gameName, callback) {
         gameKey.replace(/grand theft auto v/g, 'gta v'),
         gameKey.replace(/grand theft auto v/g, 'gta 5')
     ];
-    
+
     for (const variant of gameVariants) {
         if (gameLogoMap[variant]) {
             console.log(`Logo found for: ${gameName} (variante: ${variant})`);
@@ -625,9 +627,9 @@ function searchGameLogo(gameName, callback) {
             return;
         }
     }
-    
+
     let currentIndex = 0;
-    
+
     function tryNextSource() {
         if (currentIndex >= searchSources.length) {
             const initials = gameName.length >= 3 ? gameName.substring(0, 3).toUpperCase() : gameName.toUpperCase();
@@ -635,22 +637,22 @@ function searchGameLogo(gameName, callback) {
             callback(svgIcon);
             return;
         }
-        
+
         const img = new Image();
         img.crossOrigin = 'anonymous';
-        
-        img.onload = function() {
+
+        img.onload = function () {
             callback(searchSources[currentIndex]);
         };
-        
-        img.onerror = function() {
+
+        img.onerror = function () {
             currentIndex++;
             tryNextSource();
         };
-        
+
         img.src = searchSources[currentIndex];
     }
-    
+
     tryNextSource();
 }
 
@@ -658,6 +660,7 @@ function getGameSteamId(gameName) {
     const steamIds = {
         'grand theft auto v': '271590',
         'gta v': '271590',
+        'fivem': '271590',
         'minecraft': '1172470',
         'fortnite': '1172470',
         'valorant': '1172470'
